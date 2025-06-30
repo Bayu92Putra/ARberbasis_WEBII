@@ -1,4 +1,4 @@
-<!-- index.html -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -14,13 +14,19 @@
         overflow: hidden;
         background-color: transparent;
       }
+      #uiContainer {
+        display: none;
+        transition: opacity 0.5s ease;
+        width: 1024px;
+        height: 768px;
+        background: transparent;
+      }
     </style>
   </head>
   <body>
 
     <!-- UI container that will be rendered inside AR marker -->
-    <div id="uiContainer" style="width:1024px; height:768px; background: transparent;">
-      <!-- Kamu bisa copy-paste seluruh isi body sebelumnya ke sini -->
+    <div id="uiContainer">
       <div class="flex flex-col md:flex-row max-w-7xl mx-auto w-full p-6 text-white bg-gray-800/80 rounded-xl shadow-xl">
         <div class="md:w-1/2 space-y-6">
           <!-- Video -->
@@ -66,6 +72,23 @@
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+      const marker = document.querySelector('a-marker');
+      const uiContainer = document.querySelector('#uiContainer');
+
+      marker.addEventListener('markerFound', () => {
+        uiContainer.style.display = 'block';
+        uiContainer.style.opacity = '1';
+      });
+
+      marker.addEventListener('markerLost', () => {
+        uiContainer.style.opacity = '0';
+        setTimeout(() => {
+          uiContainer.style.display = 'none';
+        }, 500);
+      });
+    </script>
 
   </body>
 </html>
