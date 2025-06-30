@@ -1,115 +1,84 @@
 
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>WebAR Hiro - Shader Inline</title>
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>WebAR Native UI</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
+    <style>
+      html, body { margin: 0; overflow: hidden; background-color: transparent; }
+    </style>
+  </head>
+  <body>
+    <a-scene embedded arjs="sourceType: webcam;" renderer="alpha:true" vr-mode-ui="enabled: false">
+      <a-assets>
+        <video id="guideVideo" src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" crossorigin="anonymous"></video>
+        <audio id="audioIndo" src="https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3" crossorigin="anonymous"></audio>
+        <audio id="audioEng" src="https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3" crossorigin="anonymous"></audio>
+      </a-assets>
 
-  <style>
-    html, body {
-      margin: 0;
-      overflow: hidden;
-      background-color: transparent;
-    }
-    #uiContainer {
-      width: 1024px;
-      height: 768px;
-      background: transparent;
-    }
-  </style>
-</head>
-<body>
+      <a-marker preset="hiro">
+        <!-- Panel UI -->
+        <a-entity position="0 0 0" rotation="-90 0 0">
+          <!-- Video kiri -->
+          <a-video src="#guideVideo" width="1.5" height="0.9" position="-1 0.6 0" id="videoPanel"></a-video>
 
-<!-- HTML shader inline script -->
-<script>
-AFRAME.registerShader('html', {
-  schema: {
-    target: { type: 'selector' },
-    width: { type: 'int', default: 512 },
-    height: { type: 'int', default: 512 }
-  },
-  init: function (data) {
-    this.canvas = document.createElement('canvas');
-    this.canvas.width = data.width;
-    this.canvas.height = data.height;
-    this.ctx = this.canvas.getContext('2d');
-    this.texture = new THREE.Texture(this.canvas);
-    this.el.sceneEl.object3D.onBeforeRender = () => this.update();
-  },
-  update: function () {
-    if (!this.data.target) return;
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.drawImage(this.data.target, 0, 0, this.canvas.width, this.canvas.height);
-    this.texture.needsUpdate = true;
-  },
-  tick: function () {
-    this.update();
-  },
-  getMaterial: function () {
-    return new THREE.MeshBasicMaterial({ map: this.texture, transparent: true });
-  }
-});
-</script>
+          <!-- Teks kanan -->
+          <a-text value="Penjelasan:
+Mona Lisa adalah lukisan karya Leonardo da Vinci...
+Dikenal karena teknik sfumato dan ekspresi wajah misterius." 
+                   width="1.5" color="#fff" align="left" position="0.4 0.7 0" baseline="top"></a-text>
 
-<!-- UI Container -->
-<div id="uiContainer" style="position: absolute; top: -9999px; left: -9999px;">
-  <div class="flex flex-col md:flex-row max-w-7xl mx-auto w-full p-6 text-white bg-gray-800/80 rounded-xl shadow-xl">
-    <div class="md:w-1/2 space-y-6">
-      <video id="mainVideo" class="w-full rounded-xl" controls preload="metadata">
-        <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4" />
-      </video>
-      <div class="flex justify-end space-x-3">
-        <button onclick="document.getElementById('mainVideo').play()" class="bg-blue-600 px-4 py-1 rounded">Play</button>
-        <button onclick="document.getElementById('mainVideo').pause()" class="bg-red-600 px-4 py-1 rounded">Pause</button>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-gray-900/90 p-4 rounded">
-          <audio controls src="https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3" class="w-full"></audio>
-          <p class="text-sm mt-2">Audio 1 - Description</p>
-        </div>
-        <div class="bg-gray-900/90 p-4 rounded">
-          <audio controls src="https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3" class="w-full"></audio>
-          <p class="text-sm mt-2">Audio 2 - History</p>
-        </div>
-      </div>
-    </div>
-    <div class="md:w-1/2 p-4 bg-gray-700/80 rounded-xl overflow-y-auto max-h-[500px]">
-      <h2 class="text-2xl font-bold mb-3">Object Explanation</h2>
-      <p class="mb-3">Mona Lisa adalah lukisan paling terkenal karya Leonardo da Vinci...</p>
-      <p class="mb-3">Teknik sfumato menciptakan kesan lembut dan realistis...</p>
-      <p>Dipamerkan di Louvre, lukisan ini menarik jutaan pengunjung setiap tahun.</p>
-    </div>
-  </div>
-</div>
+          <!-- Tombol Play -->
+          <a-plane position="-1.3 -0.1 0" width="0.3" height="0.15" color="#4CAF50" class="clickable"
+                   event-set__enter="_event: click; _target: #guideVideo; _delay: 0; _emit: playvideo">
+            <a-text value="▶" align="center" color="#fff" position="0 0 0.01" width="0.5"></a-text>
+          </a-plane>
 
-<!-- AR Scene -->
-<a-scene embedded arjs="sourceType: webcam;" renderer="alpha: true" vr-mode-ui="enabled: false">
-  <a-marker preset="hiro" id="markerHiro">
-    <a-entity id="htmlEntity"
-              geometry="primitive: plane; height: 2.2; width: 3"
-              material="shader: html; target: #uiContainer"
-              position="0 0 0" rotation="-90 0 0"
-              visible="false">
-    </a-entity>
-  </a-marker>
-  <a-entity camera></a-entity>
-</a-scene>
+          <!-- Tombol Pause -->
+          <a-plane position="-0.9 -0.1 0" width="0.3" height="0.15" color="#F44336" class="clickable"
+                   event-set__enter="_event: click; _target: #guideVideo; _delay: 0; _emit: pausevideo">
+            <a-text value="⏸" align="center" color="#fff" position="0 0 0.01" width="0.5"></a-text>
+          </a-plane>
 
-<script>
-  const marker = document.querySelector('#markerHiro');
-  const htmlEntity = document.querySelector('#htmlEntity');
+          <!-- Tombol Audio Indo -->
+          <a-plane position="0.4 -0.1 0" width="0.5" height="0.15" color="#2196F3" class="clickable" id="btnIndo">
+            <a-text value="Audio Indo" align="center" color="#fff" position="0 0 0.01" width="0.8"></a-text>
+          </a-plane>
 
-  marker.addEventListener('markerFound', () => {
-    htmlEntity.setAttribute('visible', 'true');
-  });
+          <!-- Tombol Audio Eng -->
+          <a-plane position="1 -0.1 0" width="0.5" height="0.15" color="#9C27B0" class="clickable" id="btnEng">
+            <a-text value="Audio Eng" align="center" color="#fff" position="0 0 0.01" width="0.8"></a-text>
+          </a-plane>
 
-  marker.addEventListener('markerLost', () => {
-    htmlEntity.setAttribute('visible', 'false');
-  });
-</script>
+          <!-- Audio -->
+          <a-sound id="soundIndo" src="#audioIndo" autoplay="false" position="0 0 0"></a-sound>
+          <a-sound id="soundEng" src="#audioEng" autoplay="false" position="0 0 0"></a-sound>
+        </a-entity>
+      </a-marker>
 
-</body>
+      <a-entity camera></a-entity>
+
+      <script>
+        // Tombol kontrol video
+        document.querySelector("[event-set__enter][_emit='playvideo']").addEventListener("click", () => {
+          document.querySelector("#guideVideo").play();
+        });
+        document.querySelector("[event-set__enter][_emit='pausevideo']").addEventListener("click", () => {
+          document.querySelector("#guideVideo").pause();
+        });
+
+        // Tombol audio
+        document.querySelector("#btnIndo").addEventListener("click", () => {
+          document.querySelector("#soundEng").components.sound.stopSound();
+          document.querySelector("#soundIndo").components.sound.playSound();
+        });
+        document.querySelector("#btnEng").addEventListener("click", () => {
+          document.querySelector("#soundIndo").components.sound.stopSound();
+          document.querySelector("#soundEng").components.sound.playSound();
+        });
+      </script>
+    </a-scene>
+  </body>
 </html>
