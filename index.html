@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WebAR Museum - Final Hiro</title>
+  <title>WebAR UI Final - Shader Reload Fix</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
   <script src="https://unpkg.com/aframe-html-shader@1.3.0/dist/aframe-html-shader.min.js"></script>
@@ -23,7 +23,7 @@
 </head>
 <body>
 
-  <!-- UI HTML visible for shader, hidden visually via position -->
+  <!-- UI HTML container for HTML shader -->
   <div id="uiContainer" style="position: absolute; top: -9999px; left: -9999px;">
     <div class="flex flex-col md:flex-row max-w-7xl mx-auto w-full p-6 text-white bg-gray-800/80 rounded-xl shadow-xl">
       <div class="md:w-1/2 space-y-6">
@@ -57,7 +57,7 @@
   <!-- A-Frame Scene with AR -->
   <a-scene embedded arjs="sourceType: webcam;" renderer="alpha: true" vr-mode-ui="enabled: false">
     <a-marker preset="hiro" id="markerHiro">
-      <a-entity id="webaruientity"
+      <a-entity id="htmlEntity"
                 geometry="primitive: plane; height: 2.2; width: 3"
                 material="shader: html; target: #uiContainer"
                 position="0 0 0" rotation="-90 0 0"
@@ -69,14 +69,20 @@
 
   <script>
     const marker = document.querySelector('#markerHiro');
-    const entity = document.querySelector('#webaruientity');
+    const htmlEntity = document.querySelector('#htmlEntity');
 
     marker.addEventListener('markerFound', () => {
-      entity.setAttribute('visible', 'true');
+      htmlEntity.setAttribute('material', {
+        shader: 'html',
+        target: '#uiContainer',
+        transparent: true,
+        ratio: 'width'
+      });
+      htmlEntity.setAttribute('visible', 'true');
     });
 
     marker.addEventListener('markerLost', () => {
-      entity.setAttribute('visible', 'false');
+      htmlEntity.setAttribute('visible', 'false');
     });
   </script>
 </body>
