@@ -1,16 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>WebAR Fixed - HTML Shader Dynamic Load</title>
-  <!-- A-Frame v1.2.0 untuk kompatibilitas -->
+  <meta charset="UTF-8">
+  <title>WebAR Hiro - Shader Inline</title>
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <!-- Shader HTML v1.0.0 yang stabil -->
-  <script src="https://cdn.jsdelivr.net/gh/rdub80/aframe-html-shader@v1.0.0/dist/aframe-html-shader.min.js"></script>
-  <!-- AR.js -->
   <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
-  <!-- Tailwind (opsional) -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
     html, body {
       margin: 0;
@@ -26,7 +23,38 @@
 </head>
 <body>
 
-<!-- UI container disembunyikan dari layar -->
+<!-- HTML shader inline script -->
+<script>
+AFRAME.registerShader('html', {
+  schema: {
+    target: { type: 'selector' },
+    width: { type: 'int', default: 512 },
+    height: { type: 'int', default: 512 }
+  },
+  init: function (data) {
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = data.width;
+    this.canvas.height = data.height;
+    this.ctx = this.canvas.getContext('2d');
+    this.texture = new THREE.Texture(this.canvas);
+    this.el.sceneEl.object3D.onBeforeRender = () => this.update();
+  },
+  update: function () {
+    if (!this.data.target) return;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this.data.target, 0, 0, this.canvas.width, this.canvas.height);
+    this.texture.needsUpdate = true;
+  },
+  tick: function () {
+    this.update();
+  },
+  getMaterial: function () {
+    return new THREE.MeshBasicMaterial({ map: this.texture, transparent: true });
+  }
+});
+</script>
+
+<!-- UI Container -->
 <div id="uiContainer" style="position: absolute; top: -9999px; left: -9999px;">
   <div class="flex flex-col md:flex-row max-w-7xl mx-auto w-full p-6 text-white bg-gray-800/80 rounded-xl shadow-xl">
     <div class="md:w-1/2 space-y-6">
@@ -57,40 +85,29 @@
   </div>
 </div>
 
+<!-- AR Scene -->
 <a-scene embedded arjs="sourceType: webcam;" renderer="alpha: true" vr-mode-ui="enabled: false">
-  <a-marker preset="hiro" id="markerHiro"></a-marker>
+  <a-marker preset="hiro" id="markerHiro">
+    <a-entity id="htmlEntity"
+              geometry="primitive: plane; height: 2.2; width: 3"
+              material="shader: html; target: #uiContainer"
+              position="0 0 0" rotation="-90 0 0"
+              visible="false">
+    </a-entity>
+  </a-marker>
   <a-entity camera></a-entity>
 </a-scene>
 
 <script>
-  // Tunggu sampai A-Frame dan komponen html-shader siap
-  window.addEventListener('DOMContentLoaded', () => {
-    const marker = document.querySelector('#markerHiro');
+  const marker = document.querySelector('#markerHiro');
+  const htmlEntity = document.querySelector('#htmlEntity');
 
-    // Buat entity HTML secara dinamis
-    const htmlEntity = document.createElement('a-entity');
-    htmlEntity.setAttribute('id', 'htmlEntity');
-    htmlEntity.setAttribute('geometry', 'primitive: plane; height: 2.2; width: 3');
-    htmlEntity.setAttribute('rotation', '-90 0 0');
-    htmlEntity.setAttribute('position', '0 0 0');
+  marker.addEventListener('markerFound', () => {
+    htmlEntity.setAttribute('visible', 'true');
+  });
+
+  marker.addEventListener('markerLost', () => {
     htmlEntity.setAttribute('visible', 'false');
-
-    // Tambahkan entity ke marker
-    marker.appendChild(htmlEntity);
-
-    marker.addEventListener('markerFound', () => {
-      htmlEntity.setAttribute('material', {
-        shader: 'html',
-        target: '#uiContainer',
-        transparent: true,
-        ratio: 'width'
-      });
-      htmlEntity.setAttribute('visible', 'true');
-    });
-
-    marker.addEventListener('markerLost', () => {
-      htmlEntity.setAttribute('visible', 'false');
-    });
   });
 </script>
 
