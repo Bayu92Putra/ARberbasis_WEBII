@@ -1,12 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>WebAR UI Final - Stable Shader</title>
+  <meta charset="UTF-8" />
+  <title>WebAR Fixed - HTML Shader Dynamic Load</title>
+  <!-- A-Frame v1.2.0 untuk kompatibilitas -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <!-- Shader HTML v1.0.0 yang stabil -->
   <script src="https://cdn.jsdelivr.net/gh/rdub80/aframe-html-shader@v1.0.0/dist/aframe-html-shader.min.js"></script>
+  <!-- AR.js -->
   <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/2.2.1/aframe/build/aframe-ar.min.js"></script>
+  <!-- Tailwind (opsional) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
@@ -23,53 +26,57 @@
 </head>
 <body>
 
-  <!-- UI HTML container for HTML shader -->
-  <div id="uiContainer" style="position: absolute; top: -9999px; left: -9999px;">
-    <div class="flex flex-col md:flex-row max-w-7xl mx-auto w-full p-6 text-white bg-gray-800/80 rounded-xl shadow-xl">
-      <div class="md:w-1/2 space-y-6">
-        <video id="mainVideo" class="w-full rounded-xl" controls preload="metadata">
-          <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4" />
-        </video>
-        <div class="flex justify-end space-x-3">
-          <button onclick="document.getElementById('mainVideo').play()" class="bg-blue-600 px-4 py-1 rounded">Play</button>
-          <button onclick="document.getElementById('mainVideo').pause()" class="bg-red-600 px-4 py-1 rounded">Pause</button>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-gray-900/90 p-4 rounded">
-            <audio controls src="https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3" class="w-full"></audio>
-            <p class="text-sm mt-2">Audio 1 - Description</p>
-          </div>
-          <div class="bg-gray-900/90 p-4 rounded">
-            <audio controls src="https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3" class="w-full"></audio>
-            <p class="text-sm mt-2">Audio 2 - History</p>
-          </div>
-        </div>
+<!-- UI container disembunyikan dari layar -->
+<div id="uiContainer" style="position: absolute; top: -9999px; left: -9999px;">
+  <div class="flex flex-col md:flex-row max-w-7xl mx-auto w-full p-6 text-white bg-gray-800/80 rounded-xl shadow-xl">
+    <div class="md:w-1/2 space-y-6">
+      <video id="mainVideo" class="w-full rounded-xl" controls preload="metadata">
+        <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4" />
+      </video>
+      <div class="flex justify-end space-x-3">
+        <button onclick="document.getElementById('mainVideo').play()" class="bg-blue-600 px-4 py-1 rounded">Play</button>
+        <button onclick="document.getElementById('mainVideo').pause()" class="bg-red-600 px-4 py-1 rounded">Pause</button>
       </div>
-      <div class="md:w-1/2 p-4 bg-gray-700/80 rounded-xl overflow-y-auto max-h-[500px]">
-        <h2 class="text-2xl font-bold mb-3">Object Explanation</h2>
-        <p class="mb-3">Mona Lisa adalah lukisan paling terkenal karya Leonardo da Vinci...</p>
-        <p class="mb-3">Teknik sfumato menciptakan kesan lembut dan realistis...</p>
-        <p>Dipamerkan di Louvre, lukisan ini menarik jutaan pengunjung setiap tahun.</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-gray-900/90 p-4 rounded">
+          <audio controls src="https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3" class="w-full"></audio>
+          <p class="text-sm mt-2">Audio 1 - Description</p>
+        </div>
+        <div class="bg-gray-900/90 p-4 rounded">
+          <audio controls src="https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3" class="w-full"></audio>
+          <p class="text-sm mt-2">Audio 2 - History</p>
+        </div>
       </div>
     </div>
+    <div class="md:w-1/2 p-4 bg-gray-700/80 rounded-xl overflow-y-auto max-h-[500px]">
+      <h2 class="text-2xl font-bold mb-3">Object Explanation</h2>
+      <p class="mb-3">Mona Lisa adalah lukisan paling terkenal karya Leonardo da Vinci...</p>
+      <p class="mb-3">Teknik sfumato menciptakan kesan lembut dan realistis...</p>
+      <p>Dipamerkan di Louvre, lukisan ini menarik jutaan pengunjung setiap tahun.</p>
+    </div>
   </div>
+</div>
 
-  <!-- A-Frame Scene with AR -->
-  <a-scene embedded arjs="sourceType: webcam;" renderer="alpha: true" vr-mode-ui="enabled: false">
-    <a-marker preset="hiro" id="markerHiro">
-      <a-entity id="htmlEntity"
-                geometry="primitive: plane; height: 2.2; width: 3"
-                material="shader: html; target: #uiContainer"
-                position="0 0 0" rotation="-90 0 0"
-                visible="false">
-      </a-entity>
-    </a-marker>
-    <a-entity camera></a-entity>
-  </a-scene>
+<a-scene embedded arjs="sourceType: webcam;" renderer="alpha: true" vr-mode-ui="enabled: false">
+  <a-marker preset="hiro" id="markerHiro"></a-marker>
+  <a-entity camera></a-entity>
+</a-scene>
 
-  <script>
+<script>
+  // Tunggu sampai A-Frame dan komponen html-shader siap
+  window.addEventListener('DOMContentLoaded', () => {
     const marker = document.querySelector('#markerHiro');
-    const htmlEntity = document.querySelector('#htmlEntity');
+
+    // Buat entity HTML secara dinamis
+    const htmlEntity = document.createElement('a-entity');
+    htmlEntity.setAttribute('id', 'htmlEntity');
+    htmlEntity.setAttribute('geometry', 'primitive: plane; height: 2.2; width: 3');
+    htmlEntity.setAttribute('rotation', '-90 0 0');
+    htmlEntity.setAttribute('position', '0 0 0');
+    htmlEntity.setAttribute('visible', 'false');
+
+    // Tambahkan entity ke marker
+    marker.appendChild(htmlEntity);
 
     marker.addEventListener('markerFound', () => {
       htmlEntity.setAttribute('material', {
@@ -84,6 +91,8 @@
     marker.addEventListener('markerLost', () => {
       htmlEntity.setAttribute('visible', 'false');
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
